@@ -28,26 +28,50 @@ jobs:
       - name: Prepare Capacitor
         run: |
           npm init -y
-          npm install @capacitor/core@6 @capacitor/cli@6 @capacitor/android@6 @capacitor/assets
-          mkdir -p www
-          cp -r index.html manifest.webmanifest sw.js www/
+          npm install @capacitor/core@6 @capacitor/cli@6 @capacitor/android@6
 
-          mkdir -p assets
-          cp icon-512.png assets/icon.png
+          mkdir -p www
+          cp index.html www/
+          cp manifest.webmanifest www/
+          cp sw.js www/
+
+          # Find the newest 512px icon
+          ICON=$(find . -maxdepth 1 -type f -name 'icon-512*.png' | head -n 1)
+
+          if [ -z "$ICON" ]; then
+            echo "ERROR: 512px icon not found"
+            exit 1
+          fi
+
+          echo "Using icon: $ICON"
+
+          cp "$ICON" www/icon-512.png
 
           npx cap init "Negin App" com.negin.app --web-dir www
           npx cap add android
-          npx capacitor-assets generate --android
           npx cap sync android
 
-      - name: Build APK
+      - name: Install Pillow
         run: |
-          cd android
-          chmod +x gradlew
-          ./gradlew assembleDebug
+          python3 -m pip install --upgrade pillow
 
-      - name: Upload APK
-        uses: actions/upload-artifact@v4
-        with:
-          name: Negin-APK
-          path: android/app/build/outputs/apk/debug/app-debug.apk
+      - name: Set Negin Android Icon
+        run: |
+          python3 <<'PY'
+          from PIL import Image
+          import os
+          import re
+
+          # Find the Negin icon
+          files = [
+              f for f in os.listdir(".")
+              if f.startswith("icon-512") and f.endswith(".png")
+          ]
+
+          if not files:
+              raise SystemExit("ERROR: icon-512 PNG not found")
+
+          source = files[0]
+          print("Using:", source)
+
+         
