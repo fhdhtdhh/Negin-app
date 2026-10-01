@@ -1,0 +1,44 @@
+{
+  "name": "رستوران نگین | سفارش آنلاین",
+  "short_name": "نگین",
+  "description": "سفارش آنلاین غذا از رستوران نگین",
+  "lang": "fa",
+  "dir": "rtl",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#ffe6f1",
+  "theme_color": "#d9387a",
+  "icons": [
+    {
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "id": "./",
+  "display_override": [
+    "window-controls-overlay",
+    "standalone"
+  ],
+  "prefer_related_applications": false,
+  "categories": [
+    "food",
+    "shopping"
+  ],
+  "shortcuts": [
+    {
+      "name": "سفارش آنلاین",
+      "short_name": "سفارش",
+      "url": "./index.html"
+    }
+  ]
+}
