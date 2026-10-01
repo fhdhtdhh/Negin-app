@@ -3,36 +3,29 @@ name: Build Negin APK
 on:
   workflow_dispatch:
   push:
-    branches:
-      - main
+    branches: [main]
 
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Get project
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Setup Node
-        uses: actions/setup-node@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: 20
 
-      - name: Setup Java
-        uses: actions/setup-java@v4
+      - uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: 17
 
-      - name: Prepare Capacitor
+      - name: Prepare
         run: |
           npm init -y
           npm install @capacitor/core@6 @capacitor/cli@6 @capacitor/android@6
           mkdir -p www
-          cp index.html www/
-          cp manifest.webmanifest www/
-          cp sw.js www/
+          cp index.html manifest.webmanifest sw.js www/
           cp icon-512-3.png www/icon-512.png
           cp icon-512-3.png www/icon-192.png
           npx cap init "Negin App" com.negin.app --web-dir www
@@ -40,73 +33,32 @@ jobs:
           npx cap sync android
 
       - name: Install Pillow
-        run: python3 -m pip install --upgrade pillow
+        run: pip3 install pillow
 
-      - name: Set Android Icons (Full)
+      - name: Set Icons
         run: |
-          python3 << 'PY'
-          from PIL import Image
-          import os
+          python3 -c '
+from PIL import Image
+import os
+img = Image.open("icon-512-3.png").convert("RGBA")
+sizes = {"mdpi":48,"hdpi":72,"xhdpi":96,"xxhdpi":144,"xxxhdpi":192}
+for name, size in sizes.items():
+    path = f"android/app/src/main/res/mipmap-{name}"
+    os.makedirs(path, exist_ok=True)
+    r = img.resize((size, size), Image.LANCZOS)
+    r.save(f"{path}/ic_launcher.png")
+    r.save(f"{path}/ic_launcher_round.png")
+    r.save(f"{path}/ic_launcher_foreground.png")
+print("Icons OK")
+'
 
-          source = "icon-512-3.png"
-          img = Image.open(source).convert("RGBA")
-
-          # سایزهای معمولی
-          sizes = {
-              "mipmap-mdpi": 48,
-              "mipmap-hdpi": 72,
-              "mipmap-xhdpi": 96,
-              "mipmap-xxhdpi": 144,
-              "mipmap-xxxhdpi": 192,
-          }
-
-          base = "android/app/src/main/res"
-
-          for folder, size in sizes.items():
-              path = os.path.join(base, folder)
-              os.makedirs(path, exist_ok=True)
-              resized = img.resize((size, size), Image.LANCZOS)
-              resized.save(os.path.join(path, "ic_launcher.png"))
-              resized.save(os.path.join(path, "ic_launcher_round.png"))
-              resized.save(os.path.join(path, "ic_launcher_foreground.png"))
-              print(f"✓ {folder}")
-
-          # Adaptive Icon (برای اندروید ۸ به بالا)
-          anydpi = os.path.join(base, "mipmap-anydpi-v26")
-          os.makedirs(anydpi, exist_ok=True)
-
-          # فایل XML برای adaptive icon
-          adaptive_xml = '''<?xml version="1.0" encoding="utf-8"?>
-<adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
-    <background android:drawable="@color/ic_launcher_background"/>
-    <foreground android:drawable="@mipmap/ic_launcher_foreground"/>
-</adaptive-icon>'''
-
-          with open(os.path.join(anydpi, "ic_launcher.xml"), "w") as f:
-              f.write(adaptive_xml)
-          with open(os.path.join(anydpi, "ic_launcher_round.xml"), "w") as f:
-              f.write(adaptive_xml)
-
-          # رنگ پس‌زمینه
-          values = os.path.join(base, "values")
-          os.makedirs(values, exist_ok=True)
-          with open(os.path.join(values, "ic_launcher_background.xml"), "w") as f:
-              f.write('''<?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <color name="ic_launcher_background">#FFF8F0</color>
-</resources>''')
-
-          print("Adaptive icons set successfully!")
-          PY
-
-      - name: Build APK
+      - name: Build
         run: |
           cd android
           chmod +x gradlew
           ./gradlew assembleDebug
 
-      - name: Upload APK
-        uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v4
         with:
           name: Negin-APK
           path: android/app/build/outputs/apk/debug/app-debug.apk
