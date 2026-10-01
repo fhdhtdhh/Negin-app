@@ -2,9 +2,9 @@ const V = 'negin-v2';
 const CORE = [
   './',
   './index.html',
-  './manifest.webmanifest',
-  './icons/icon-192.png',
-  './icons/icon-512.png'
+  './icon-192-2.png',
+'./icon-512-3.png'
+  
 ];
 
 self.addEventListener('install', event => {
