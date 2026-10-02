@@ -1,4 +1,4 @@
-هname: Build Negin APK
+name: Build Negin APK
 
 on:
   push:
@@ -49,10 +49,10 @@ jobs:
               r.save(f"{path}/ic_launcher_round.png")
           print("Icons OK")
           PY
-          rm -rf android/app/src/main/res/mipmap-anydpi-v26
+          
       - name: Build
         run: |
-          cd android
+          rm -rf android/app/src/main/res/mipmap-anydpi-v26 && cd android
           chmod +x gradlew
           ./gradlew assembleDebug
 
