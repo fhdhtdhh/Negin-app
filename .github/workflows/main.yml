@@ -58,5 +58,5 @@ jobs:
 
       - uses: actions/upload-artifact@v4
         with:
-          name: Negin-APK
+          name: Negin-APK-v2
           path: android/app/build/outputs/apk/debug/app-debug.apk
